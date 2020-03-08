@@ -8,9 +8,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-filepath = "../data/"
+filepath = "../Data/"
 filename = "pseudo_facebook.csv"
-
+outname = "diff_out.csv"
 names = (
     'userid',
     'age', 
@@ -28,60 +28,61 @@ names = (
     'www_likes',
     'www_likes_received',
 )
- # , sep=", ", index_col=False, engine='python'
+
+def toNum(data):
+	m, n = data.shape
+	for i in range(m):
+		for j in range(n):
+			if np.isnan(data[i][j]):
+				data[i][j] = int(0)
+			else:
+				data[i][j] = int(data[i][j])
+	return data
+
 df = pd.read_csv(filepath+filename, header=0, names=names);
 
-# ['data': array([[],]), 'target': array([]), 'target_names': array([]), 'DESCR':""]
+for row in df.index:
+	# print(df.at[row, 'gender'])
+	if df.at[row, 'gender'] == str('male'):
+		# print('male')
+		df.at[row, 'gender'] = int(0)
+	elif df.at[row, 'gender'] == str('female'):
+		# print('female')
+		df.at[row, 'gender'] = int(1)
+	else:
+		df.at[row, 'gender'] = int(0)
+		# print('other')
+
 fb_dataset = util.Bunch()
-fb_dataset.data = np.array(df)
-fb_dataset.target = 
+fb_dataset.data = toNum(np.array(df))
+fb_dataset.target = np.array([int(df.at[row, 'age']) for row in df.index])
 
-
-# fb_dataset.data = np.array([[df.at[row, col] for col in names] for row in df.index])
-# print(fb_dataset.data)
-
-# for row in df.index:
-# 	print([df.at[row, col] for col in names])
-
-# laplace = Laplace()
-# laplace.set_epsilon(0.5)
-# laplace.set_sensitivity(1)
-# laplace.randomise(3)
-
-print("----------- GaussianNB --------------")
-
-dataset = datasets.load_iris()
-print(type(dataset))
-print(type(dataset.data))
-# print(dataset)
-
-# print("\n\n\n\n\n\n")
-# print(dataset.target)
-
-X_train, X_test, y_train, y_test = train_test_split(dataset.data, dataset.target, test_size=0.2)
-clf = models.GaussianNB()
-clf.fit(X_train, y_train)
-clf.predict(X_test)
-print("Test accuracy: %f" % accuracy_score(y_test, clf.predict(X_test)))
-
-print("\n\n\n")
+print("filename", filepath+filename)
+print("e-differential privacy")
+X_train, X_test, y_train, y_test = fb_dataset.data, fb_dataset.data, fb_dataset.target, fb_dataset.target
 epsilons = np.logspace(-2, 2, 50)
-bounds = [(4.3, 7.9), (2.0, 4.4), (1.1, 6.9), (0.1, 2.5)]
+minbounds = np.amin(X_train, axis=0)
+maxbounds = np.amax(X_train, axis=0)
+bounds = [(minbounds[i], maxbounds[i]) for i in range(X_train[0].size)]
+
 accuracy = list()
-
-clf = models.GaussianNB(bounds=bounds, epsilon=0.001)
+epsilon = 1
+clf = models.GaussianNB(bounds=bounds, epsilon=epsilon)
 clf.fit(X_train, y_train)
-print("truth:   ", y_test, " \npredict: ", clf.predict(X_test))
-print("accuracy: ", accuracy_score(y_test, clf.predict(X_test)))
+predict = clf.predict(X_test)
+# print(predict.shape)
 
-# for epsilon in epsilons:
-#     clf = models.GaussianNB(bounds=bounds, epsilon=epsilon)
-#     clf.fit(X_train, y_train)
-    
-#     accuracy.append(accuracy_score(y_test, clf.predict(X_test)))
+print("epsilon: ", epsilon)
+print("accuracy: ", accuracy_score(y_test, predict))
+for row in df.index:
+	if df.at[row, 'gender'] == 0:
+		df.at[row, 'gender'] = 'male'
+	elif df.at[row, 'gender'] == 1:
+		df.at[row, 'gender'] = 'female'
+	else:
+		df.at[row, 'gender'] = 'male'
 
-# plt.semilogx(epsilons, accuracy)
-# plt.title("Differentially private Naive Bayes accuracy")
-# plt.xlabel("epsilon")
-# plt.ylabel("Accuracy")
-# plt.show()
+	df.at[row, 'age'] = predict[row]
+
+print(df)
+df.to_csv(filepath+outname, index=False)
