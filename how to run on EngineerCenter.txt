@@ -2,6 +2,6 @@ Run the following command on engineering center.
 
 pip3 install --user virtualenv pandas
 pip3 install --user virtualenv sklearn
-
+pip3 install --user virtualenv matplotlib
 
 Then run `python3 DatasetPrivacy_281.py` 
