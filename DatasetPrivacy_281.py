@@ -202,6 +202,7 @@ k_hidden_failure=0
 for index, row in k_res.iterrows():
     if row['count']<3:
         k_hidden_failure=k_hidden_failure+row['count']
+print('k hidden failure:')
 print(k_hidden_failure)
 
 
@@ -236,6 +237,7 @@ diff_df = dataframe_difference(ori, diff_out, 'both')
 d_hidden_failure=0
 for index, row in diff_df.iterrows():
     d_hidden_failure=d_hidden_failure+1
+print('d hidden failure:')
 print(d_hidden_failure)
 
 
@@ -274,8 +276,6 @@ for i in clusters:
     if i==-1:
         o_normal = o_normal + 1
 print((o_total - o_normal) / o_total)
-o_total
-o_total - o_normal
 
 
 # In[28]:
@@ -294,9 +294,8 @@ for i in clusters:
     k_total = k_total + 1
     if i==-1:
         k_normal = k_normal + 1
+print('k misclassification error:')
 print((k_total - k_normal) / k_total)
-print(k_total)
-print(k_normal)
 
 
 # In[41]:
@@ -331,8 +330,9 @@ for i in clusters:
     d_total = d_total + 1
     if i==-1:
         d_normal = d_normal + 1
+print('d misclassification error:')
 print((d_total - d_normal) / d_total)
-d_total - d_normal
+
 
 
 # In[24]:
